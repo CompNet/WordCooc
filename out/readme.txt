@@ -1,0 +1,12 @@
+- frequency
+- degree: nombre de liens connectés au noeud
+- betweenness (intermédiarité): nombre de plus courts chemins passant par le noeud
+- closeness (proximité): inverse de la distance moyenne entre le noeud et le reste du réseau
+- spectral: composante du 1er vecteur propre (i.e. celui de valeur propre maximale) de la matrice d'adjacence (=généralisation du degré avec une atténuation dépendant de la distance)
+- subgraph (sous-graphe): nombre de cycles auxquels le noeud appartient
+- eccentricity: distance maximale à tous les autres sommets
+- transitivity: proportion de liens existant entre les voisins (par rapport au nombre de liens maximal possible)
+- community: numéro de la communauté à laquelle le noeud appartient (attribut catégoriel, pas numérique)
+- embeddeness (enchâssement): proportion de liens connectant à des noeuds de la même communauté
+- within-degree: z-score du degré interne (nombre de liens connectant à des noeuds de la même communauté) calculé relativement aux autres noeuds de la même communauté
+- participation coefficient: proche de 0 si le noeud est surtout connecté à sa propre communauté, et proche de 1 quand il est uniformément connecté à toutes les communautés du réseau
