@@ -1,11 +1,20 @@
 #######################################################
-# Main processing:
+# Main processing of the transcription files:
 # - Retrieve the text files.
 # - Extract the co-occurrence networks.
 # - Process a bunch of nodal measures.
 # - Record the resulting networks.
 # 
+# In a file, each line corresponds to a full transcription.
+# The script extracts one network for each transcription (line)
+# and produce a first file containing the co-occurrence matrix and
+# a second one containing the network and the nodal topological measures.
+#
 # Vincent Labatut 3/2015
+#
+# setwd("C:/Eclipse/workspaces/Extraction/")
+# setwd("~/Eclipse/workspaces/Extraction/")
+# source("WordCooc/extract-net-transcriptions.R")
 #######################################################
 library("igraph")
 
@@ -60,7 +69,7 @@ for(text.file in text.files)
 			})
 	
 	# record co-occurrence matrices
-	cat("Cording co-occurrence matrices\n")
+	cat("recording co-occurrence matrices\n")
 	sapply(1:length(co.counts), function(i) 
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
