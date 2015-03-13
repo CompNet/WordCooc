@@ -31,7 +31,7 @@ print(text.files)
 
 # build the list of terms for the whole collection
 terms.file <- paste(out.folder,"terms.txt",sep="")
-if(file.exits(terms.file))
+if(file.exists(terms.file))
 {	cat("Loading the corpus terms\n")
 	terms <- as.matrix(read.table(terms.file))	
 }else
@@ -99,7 +99,7 @@ for(text.file in text.files)
 	g <- graph.adjacency(adjmatrix=co.counts,mode="undirected",weighted=TRUE
 #			,add.rownames="label" # not necessary (redundant with the 'name' attribute)
 		)
-	V(g)$frequency <- counts[[i]]#graph.strength(g)
+	V(g)$frequency <- counts#graph.strength(g)
 
 	# process centralities
 	cat("Processing centralities\n")
