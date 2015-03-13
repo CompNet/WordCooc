@@ -13,11 +13,12 @@ source("WordCooc/com-measures.R")
 
 
 # set up in/out folders
-in.folder <- "WordCooc/in/clean/"
+in.folder <- "WordCooc/in/clean2/"
 out.folder <- "WordCooc/out/"
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
+print(text.files)
 
 # process each text file
 for(text.file in text.files)
