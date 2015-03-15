@@ -35,6 +35,12 @@ process.embeddedness <- function(graph)
 				length(which(neigh.coms==own.com))
 			})
 	result <- internal.degree / V(graph)$degree
+	
+	# possibly replace NaN by zeros
+	idx <- which(is.nan(result))
+	if(length(idx)>0)
+		result[idx] <- 0
+	
 	return(result)
 }
 
@@ -56,16 +62,23 @@ process.community.zscores <- function(values, membership)
 		result[idx] <- scale(values[idx])
 	}
 	
+	# possibly replace NaN by zeros
+	idx <- which(is.nan(result))
+	if(length(idx)>0)
+		result[idx] <- 0
+	
 	return(result)
 }
 
 #######################################################
-# Processes Guimerà & Amaral's role measures:
-# - Within-degree: community z-score of the intenal degree.
-# - Participation coefficient: reflects the external connectivity,
-#   i.e. how the node is connected to other communities than its own.
+# Processes Guimerà & Amaral's Within-degree measure,
+# a role measure corresponding to the z-score of the 
+# intenal degree.
 #
 # TODO: could also be generalized to handle weights
+#
+# graph: the graph to process (community detection is
+# 	     supposed to have been processed already).
 #######################################################
 process.ga.withindeg <- function(graph)
 {	coms <- process.neigh.coms(graph)
@@ -77,6 +90,18 @@ process.ga.withindeg <- function(graph)
 	result <- process.community.zscores(values=internal.degree,V(graph)$community)
 	return(result)
 }
+
+#######################################################
+# Processes Guimerà & Amaral's Participation coefficient,
+# a role measure reflecting the external connectivity,
+# i.e. how the node is connected to other communities than 
+# its own.
+#
+# TODO: could also be generalized to handle weights
+#
+# graph: the graph to process (community detection is
+# 	     supposed to have been processed already).
+#######################################################
 process.ga.partcoef <- function(graph)
 {	coms <- process.neigh.coms(graph)
 	result <- sapply(1:vcount(graph), function(u)
@@ -85,5 +110,11 @@ process.ga.partcoef <- function(graph)
 				denominator <- rep((length(neigh.coms))^2,length(numerator))
 				res <- 1 - sum(numerator/denominator)
 			})
+	
+	# possibly replace NaN by zeros
+	idx <- which(is.nan(result))
+	if(length(idx)>0)
+		result[idx] <- 0
+	
 	return(result)
 }
