@@ -23,10 +23,14 @@ source("WordCooc/com-measures.R")
 
 # set up in/out folders
 #in.folder <- "WordCooc/in/tweets/"
-in.folder <- "D:/Users/Vincent/Documents/Travail/training-out_vincent/"
+#in.folder <- "D:/Users/Vincent/Documents/Travail/training-out_vincent/"
+#out.folder <- "WordCooc/out/tweets/training/"
 #in.folder <- "D:/Users/Vincent/Documents/Travail/test-out_vincent/"
-out.folder <- "WordCooc/out/tweets/training/"
 #out.folder <- "WordCooc/out/tweets/test/"
+#in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
+#out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent_features/"
+in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
+out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
@@ -64,8 +68,8 @@ if(file.exists(terms.file))
 	}
 	terms <- sort(terms)
 	cat("Recording the corpus terms\n")
-	dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
-	write.table(x=terms,file=terms.file,row.names=FALSE,col.names=FALSE)
+#	dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
+#	write.table(x=terms,file=terms.file,row.names=FALSE,col.names=FALSE)
 }
 cat("\n")
 
@@ -98,7 +102,7 @@ for(text.file in text.files)
 	local.terms.indices <- match(local.terms,terms)
 	m <- cbind(local.terms.indices,local.terms)
 	colnames(m) <- c("GlobalIndex","Term")
-	write.table(x=m,file=paste(subfolder,"localterms.txt",sep=""))
+#	write.table(x=m,file=paste(subfolder,"localterms.txt",sep=""))
 	
 	# count occurrences
 	cat("Counting word occurrences\n")
@@ -122,7 +126,7 @@ for(text.file in text.files)
 	
 	# record co-occurrence matrix
 	cat("Recording the co-occurrence matrix\n")
-	write.table(x=co.counts,file=paste(subfolder,"coocurrences.txt",sep=""))
+#	write.table(x=co.counts,file=paste(subfolder,"coocurrences.txt",sep=""))
 	
 	# build the networks
 	cat("Building the network\n")
@@ -155,7 +159,7 @@ for(text.file in text.files)
 	
 	# record the network (including all available info)
 	cat("Recording the network\n")
-	write.graph(graph=g,file=paste(subfolder,"wordnetwork.graphml",sep=""),format="graphml")
+#	write.graph(graph=g,file=paste(subfolder,"wordnetwork.graphml",sep=""),format="graphml")
 	
 	# record the full vectors in a single file
 	cat("Recording the data\n")
