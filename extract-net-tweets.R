@@ -53,9 +53,10 @@ if(file.exists(terms.file))
 }else
 {	cat("Identifying the corpus terms\n")
 	terms <- c()
-	for(text.file in text.files)
+	for(i in 1:length(text.files))
 	{	# read the file
-		cat("Reading sentences for",text.file,"\n")
+		text.file <- text.files[i]
+		cat("Reading sentences for file ",i,"/",length(text.files)," ",text.file,"\n",sep="")
 		sentences <- readLines(paste(in.folder,text.file,sep=""))
 		
 		# remove empty sentences
@@ -86,9 +87,10 @@ cat("\n")
 
 # process each text file
 cat("Start extracting the networks\n")
-for(text.file in text.files)
+for(i in 1:length(text.files))
 {	# read the file line-by-line
-	cat("Reading sentences for",text.file,"\n")
+	text.file <- text.files[i]
+	cat("Reading sentences for file ",i,"/",length(text.files)," ",text.file,"\n",sep="")
 	sentences <- readLines(paste(in.folder,text.file,sep=""))
 	
 	# set up output folder
