@@ -50,7 +50,7 @@ if(file.exists(terms.file))
 		sentences <- readLines(paste(in.folder,text.file,sep=""))
 		
 		# remove empty sentences
-		sentences <- sentences[nchar(sentences)>0]
+		sentences <- sentences[nchar(sentences,type="bytes")>0]
 		
 		# split each line in columns using tab as a separator
 		cat("Spliting sentences\n")
@@ -85,7 +85,7 @@ for(text.file in text.files)
 	dir.create(subfolder,recursive=TRUE,showWarnings=FALSE)
 	
 	# remove empty sentences
-	sentences <- sentences[nchar(sentences)>0]
+	sentences <- sentences[nchar(sentences,type="bytes")>0]
 	
 	# split each line in columns using tab as a separator
 	cat("Spliting sentences\n")
