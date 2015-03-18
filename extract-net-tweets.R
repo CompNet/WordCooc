@@ -20,7 +20,6 @@ library("igraph")
 
 source("WordCooc/com-measures.R")
 
-
 # Whether or not to record secondary data such as co-occurrence
 # networks, list of terms, co-occurrence matrix, etc.
 record.secondary.data <- FALSE
@@ -192,11 +191,12 @@ for(text.file in text.files)
 	colnames(data) <- meas.names
 	for(meas.name in meas.names)
 		data[indices,meas.name] <- get.vertex.attribute(graph=g,name=meas.name)
+	data <- round(data,digits=4)
 	if(output.full.matrix)
-		write.table(x=data,file=paste(subfolder,"features.txt",sep=""),row.names=FALSE,col.names=TRUE)
+		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"features.txt",sep=""),row.names=FALSE,col.names=TRUE, quote=FALSE, sep="\t")
 	else
 	{	rownames(data) <- local.terms
-		write.table(x=data,file=paste(subfolder,"features.txt",sep=""),row.names=TRUE,col.names=TRUE)
+		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"features.txt",sep=""),row.names=TRUE,col.names=TRUE, quote=FALSE, sep="\t")
 	}
 
 	# plot graph
