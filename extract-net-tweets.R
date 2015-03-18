@@ -30,14 +30,14 @@ record.secondary.data <- FALSE
 output.full.matrix <- FALSE
 
 # set up in/out folders
-in.folder <- "WordCooc/in/tweets/"
-out.folder <- "WordCooc/out/tweets/"
+#in.folder <- "WordCooc/in/tweets/"
+#out.folder <- "WordCooc/out/tweets/"
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent_features/"
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
-#in.folder <- "~/work/data/training/"
-#out.folder <- "~/work/data/training/features/"
+in.folder <- "~/work/data/training/"
+out.folder <- "~/work/data/training/features/"
 #in.folder <- "~/work/data/test/"
 #out.folder <- "~/work/data/test/features/"
 
@@ -137,7 +137,7 @@ for(text.file in text.files)
 	co.counts <- table(factor(pairs[,1],levels=local.terms),factor(pairs[,2],levels=local.terms))
 	
 	# record co-occurrence matrix
-	if(record.secondary.data)
+#	if(record.secondary.data)
 	{	cat("Recording the co-occurrence matrix\n")
 		write.table(x=co.counts,file=paste(subfolder,"coocurrences.txt",sep=""))
 	}
