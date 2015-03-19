@@ -14,7 +14,7 @@
 #
 # setwd("C:/Eclipse/workspaces/Extraction/")
 # setwd("~/Eclipse/workspaces/Extraction/")
-# source("WordCooc/extract-net-transcriptions.R")
+# source("WordCooc/extract-net-transcriptions-nodalmeas.R")
 #######################################################
 library("igraph")
 
