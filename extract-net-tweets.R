@@ -37,9 +37,9 @@ output.full.matrix <- FALSE
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
 in.folder <- "~/work/data/training/"
-out.folder <- "~/work/data/training/features/"
+out.folder <- "~/work/data/training_features/"
 #in.folder <- "~/work/data/test/"
-#out.folder <- "~/work/data/test/features/"
+#out.folder <- "~/work/data/test_features/"
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
