@@ -20,6 +20,8 @@ library("igraph")
 
 source("WordCooc/com-measures.R")
 
+# TODO we could also consider directed network (and all the adapted measures)
+
 # Whether or not to record secondary data such as co-occurrence
 # networks, list of terms, co-occurrence matrix, etc.
 record.secondary.data <- FALSE
@@ -120,7 +122,7 @@ for(i in 1:length(text.files))
 	
 	# count occurrences
 	cat("Counting word occurrences\n")
-#	counts <- table(factor(unlist(words),levels=terms))
+	#counts <- table(factor(unlist(words),levels=terms))
 	counts <- table(factor(unlist(words),levels=local.terms))
 	
 	# remove one-word sentences
@@ -135,8 +137,9 @@ for(i in 1:length(text.files))
 	pairs <- cbind(unlist(pairs1),unlist(pairs2))
 	
 	# count co-occurrences
-#	co.counts <- table(factor(pairs[,1],levels=terms),factor(pairs[,2],levels=terms))
-	co.counts <- table(factor(pairs[,1],levels=local.terms),factor(pairs[,2],levels=local.terms))
+	#co.counts <- table(factor(pairs[,1],levels=terms),factor(pairs[,2],levels=terms))
+	#co.counts <- table(factor(pairs[,1],levels=local.terms),factor(pairs[,2],levels=local.terms))
+	co.counts <- process.adjacency(mat=pairs, sym=TRUE, levels=local.terms)
 	
 	# record co-occurrence matrix
 #	if(record.secondary.data)
@@ -147,7 +150,7 @@ for(i in 1:length(text.files))
 	# build the networks
 	cat("Building the network\n")
 	g <- graph.adjacency(adjmatrix=co.counts,mode="undirected",weighted=TRUE
-#			,add.rownames="label" # not necessary (redundant with the 'name' attribute)
+			#,add.rownames="label" # not necessary (redundant with the 'name' attribute)
 		)
 	V(g)$frequency <- counts#graph.strength(g)
 

@@ -1,8 +1,9 @@
 #######################################################
-# Main processing of the transcription files:
+# Processing of the transcription files:
 # - Retrieve the text files.
+# - Retrieve the topic map.
 # - Extract the co-occurrence networks.
-# - Process a bunch of nodal measures.
+# - Replace words by the corresponding topic.
 # - Record the resulting networks.
 # 
 # In a file, each line corresponds to a full transcription.
@@ -16,14 +17,27 @@
 # setwd("~/Eclipse/workspaces/Extraction/")
 # source("WordCooc/extract-net-transcriptions-nodalmeas.R")
 #######################################################
-library("igraph")
+#library("igraph")
 
-source("WordCooc/com-measures.R")
+source("WordCooc/misc.R")
 
+
+# States whether word order should be considered or not.
+# If TRUE, then the sequence word1 word2 leads to a link
+# from word1 to word2, but not in the other direction. 
+# If FALSE, both sequences word1 word2 and word2 word1 are
+# considered similarly.
+directed <- FALSE 
 
 # set up in/out folders
-in.folder <- "WordCooc/in/clean2/"
+in.folder <- "WordCooc/in/clean/"
+in.map <- "WordCooc/in/discriminativeWordsListForEachTheme_200.txt"
 out.folder <- "WordCooc/out/"
+
+# get the topic map
+topic.map <- as.matrix(read.table(in.map))
+topic.map <- rbind(topic.map,c("NA","SEP")) # add the separator symbol
+topic.names <- sort(unique(topic.map[,2]))
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
@@ -50,78 +64,42 @@ for(text.file in text.files)
 	cat("Spliting sentences\n")
 	words <- strsplit(sentences, " ")
 	
-	# count occurrences
-	cat("Counting word occurrences\n")
-	counts <- lapply(words,function(v) 
-			{	lev = sort(unique(v))
-				table(factor(v,levels=lev))
+	# replace each word by its topic
+	cat("Replacing words by corresponding topics\n")
+	topics <- lapply(words,function(v) 
+			{	idx <- match(v,topic.map[,1])	# get the row of the word in the map
+				idx[is.na(idx)] <- nrow(topic.map) # for words not contained in the map, use the last row (=SEP)
+				return(topic.map[idx,2])
 			})
 	
 	# build the matrices of adjacent words
-	cat("Counting word co-occurrencess\n")
-	pairs <- lapply(words,function(v) 
+	cat("Counting topic co-occurrencess\n")
+	pairs <- lapply(topics,function(v) 
 				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
 	
-	# count co-occurrences
-	co.counts <- lapply(pairs,function(m) 
-			{	lev = sort(unique(c(m)))
-				table(factor(m[,1],levels=lev),factor(m[,2],levels=lev))
-			})
+	# build the adjacency matrices
+	co.counts <- lapply(pairs, function(m) 
+				process.adjacency(mat=m, sym=!directed, levels=topic.names))
 	
-	# record co-occurrence matrices
-	cat("recording co-occurrence matrices\n")
+	# build the graph
+#	cat("Building graph\n")
+#	graphs <- lapply(pairs, function(m) 
+#			{	g <- graph.edgelist(el=m,directed=directed)
+#				E(g)$weight <- 1
+#				g <- simplify(graph=g,remove.multiple=TRUE,remove.loops=FALSE,edge.attr.comb="sum")
+#			})
+	
+	# record co-occurrence matrices (only the non-redundant part)
+	cat("recording co-occurrence matrices as vectors\n")
 	sapply(1:length(co.counts), function(i) 
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				write.table(x=co.counts[[i]],file=paste(sentence.folder,"coocurrences.txt",sep=""))
-			})
-	
-	# build the networks
-	cat("Building networks\n")
-	nets <- lapply(1:length(co.counts),function(i) 
-			{	g <- graph.adjacency(adjmatrix=co.counts[[i]],mode="undirected",weighted=TRUE
-#					,add.rownames="label" # not necessary (redundant with the 'name' attribute)
-				)
-				V(g)$frequency <- counts[[i]]#graph.strength(g)
-				return(g)
-			})
-
-	# process centralities
-	cat("Processing centralities\n")
-	nets <- lapply(nets,function(g) 
-			{	V(g)$degree <- degree(g)
-				V(g)$betweenness <- betweenness(g)
-				V(g)$closeness <- closeness(g)
-				V(g)$spectral <- evcent(g)$vector
-				V(g)$subgraph <- subgraph.centrality(g)
-				return(g)
-			})
-	
-	# process other nodal measures
-	cat("Processing other measures\n")
-	nets <- lapply(nets,function(g) 
-			{	V(g)$eccentricity <- eccentricity(g)
-				V(g)$transitivity <- transitivity(graph=g, type="localundirected",isolates="zero")
-				return(g)
-			})
-	
-	# detect communities and process related measures
-	cat("Processing community-related measures\n")
-	nets <- lapply(nets,function(g) 
-			{	coms <- infomap.community(graph=g,modularity=FALSE)
-				membr <- membership(coms)
-				V(g)$community <- membr
-				V(g)$embeddeness <- process.embeddedness(g)
-				V(g)$gawithindeg <- process.ga.withindeg(g)
-				V(g)$gapartcoef <- process.ga.partcoef(g)
-				return(g)
-			})
-	
-	# record the networks (including all available info)
-	cat("Recording networks\n")
-	nets <- lapply(1:length(nets),function(i) 
-			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				write.graph(graph=nets[[i]],file=paste(sentence.folder,"wordnetwork.graphml",sep=""),format="graphml")
+				if(directed)
+				{	data <- c(co.counts[[i]])
+					#TODO générer un fichier "légende" avec la signification de chaque valeur du vecteur produit
+				}
+				else
+					data <- co.counts[[i]][upper.tri(co.counts[[i]], diag=TRUE)]
+				write.table(x=data,file=paste(sentence.folder,"coocurrences.txt",sep=""))
 			})
 }

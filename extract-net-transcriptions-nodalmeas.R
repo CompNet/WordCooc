@@ -1,5 +1,5 @@
 #######################################################
-# Main processing of the transcription files:
+# Processing of the transcription files:
 # - Retrieve the text files.
 # - Extract the co-occurrence networks.
 # - Process a bunch of nodal measures.
@@ -18,10 +18,12 @@
 #######################################################
 library("igraph")
 
+source("WordCooc/com-measures.R")
+source("WordCooc/misc.R")
 
 
 # set up in/out folders
-in.folder <- "WordCooc/in/clean2/"
+in.folder <- "WordCooc/in/clean/"
 out.folder <- "WordCooc/out/"
 
 # get text files
@@ -64,7 +66,8 @@ for(text.file in text.files)
 	# count co-occurrences
 	co.counts <- lapply(pairs,function(m) 
 			{	lev = sort(unique(c(m)))
-				table(factor(m[,1],levels=lev),factor(m[,2],levels=lev))
+				#table(factor(m[,1],levels=lev),factor(m[,2],levels=lev))
+				process.adjacency(mat=m, sym=TRUE, levels=lev)
 			})
 	
 	# record co-occurrence matrices
