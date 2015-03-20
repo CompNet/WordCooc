@@ -14,7 +14,7 @@
 #
 # setwd("C:/Eclipse/workspaces/Extraction/")
 # setwd("~/Eclipse/workspaces/Extraction/")
-# source("WordCooc/extract-net-transcriptions-topics.R")
+# source("WordCooc/extract-net-transcriptions-nodalmeas.R")
 #######################################################
 library("igraph")
 
@@ -124,6 +124,6 @@ for(text.file in text.files)
 	nets <- lapply(1:length(nets),function(i) 
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				write.graph(graph=nets[[i]],file=paste(sentence.folder,"wordnetwork.graphml",sep=""),format="graphml")
+				write.graph(graph=nets[[i]],file=paste(sentence.folder,"word-network.graphml",sep=""),format="graphml")
 			})
 }
