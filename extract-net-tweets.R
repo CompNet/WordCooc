@@ -36,6 +36,7 @@ record.secondary.data <- FALSE
 output.full.matrix <- FALSE
 
 # set up in/out folders
+log.file <- "WordCooc/out/log.txt"
 #in.folder <- "WordCooc/in/tweets/"
 #out.folder <- "WordCooc/out/tweets/"
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
@@ -46,6 +47,9 @@ in.folder <- "~/work/data/training/"
 out.folder <- "~/work/data/training_features/"
 #in.folder <- "~/work/data/test/"
 #out.folder <- "~/work/data/test_features/"
+
+# set up log
+sink(file=log.file, append=FALSE, split=TRUE)
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
@@ -219,3 +223,6 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 #	plot(g,vertex.size=4,vertex.label="")
 }
 stopCluster(par.clust)
+
+# disable logging
+sink()
