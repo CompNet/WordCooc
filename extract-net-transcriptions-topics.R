@@ -39,9 +39,9 @@ directed <- TRUE
 separator <- "ignore" # ignore explicit implicit 
 
 # set up in/out folders
-in.folder <- "WordCooc/in/clean/"
+in.folder <- "WordCooc/in/clean2/"
 in.map <- "WordCooc/in/discriminativeWordsListForEachTheme_200.txt"
-out.folder <- "WordCooc/out/clean/"
+out.folder <- "WordCooc/out/topics/"
 
 # define file prefix (for the generated files)
 prefix <- paste(

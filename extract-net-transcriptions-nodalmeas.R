@@ -22,9 +22,13 @@ source("WordCooc/com-measures.R")
 source("WordCooc/misc.R")
 
 
+# Whether or not to record secondary data such as co-occurrence
+# networks, list of terms, co-occurrence matrix, etc.
+record.secondary.data <- FALSE
+
 # set up in/out folders
-in.folder <- "WordCooc/in/clean/"
-out.folder <- "WordCooc/out/"
+in.folder <- "WordCooc/in/clean2/"
+out.folder <- "WordCooc/out/nodalmeas/"
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
@@ -71,12 +75,14 @@ for(text.file in text.files)
 			})
 	
 	# record co-occurrence matrices
-	cat("recording co-occurrence matrices\n")
-	sapply(1:length(co.counts), function(i) 
-			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				write.table(x=co.counts[[i]],file=paste(sentence.folder,"coocurrences.txt",sep=""))
-			})
+	if(record.secondary.data)
+	{	cat("recording co-occurrence matrices\n")
+		sapply(1:length(co.counts), function(i) 
+				{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+					dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+					write.table(x=co.counts[[i]],file=paste(sentence.folder,"coocurrences.txt",sep=""))
+				})
+	}
 	
 	# build the networks
 	cat("Building networks\n")
