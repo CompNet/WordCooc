@@ -17,10 +17,14 @@
 # source("WordCooc/extract-net-tweets.R")
 #######################################################
 library("igraph")
+library("parallel")		# parallel packages
+library("foreach")
+library("doParallel")
 
 source("WordCooc/com-measures.R")
+source("WordCooc/misc.R")
 
-# TODO we could also consider directed network (and all the adapted measures)
+# TODO we could also consider directed networks (and all the adapted measures)
 
 # Whether or not to record secondary data such as co-occurrence
 # networks, list of terms, co-occurrence matrix, etc.
@@ -46,6 +50,12 @@ out.folder <- "~/work/data/training_features/"
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
 print(text.files)
+
+# set up parallel processing
+core.nb <- detectCores()
+par.clust <- makeCluster(core.nb/2)
+registerDoParallel(par.clust)
+
 
 # build the list of terms for the whole collection
 terms.file <- paste(out.folder,"terms.txt",sep="")
@@ -89,7 +99,8 @@ cat("\n")
 
 # process each text file
 cat("Start extracting the networks\n")
-for(i in 1:length(text.files))
+#for(i in 1:length(text.files))
+foreach(i=1:length(text.files), .packages="igraph") %dopar%
 {	# read the file line-by-line
 	text.file <- text.files[i]
 	cat("Reading sentences for file ",i,"/",length(text.files)," ",text.file,"\n",sep="")
@@ -207,3 +218,4 @@ for(i in 1:length(text.files))
 	# plot graph
 #	plot(g,vertex.size=4,vertex.label="")
 }
+stopCluster(par.clust)
