@@ -99,6 +99,7 @@ if(file.exists(terms.file))
 		terms <- unique(c(terms, unique(words)))
 	}
 	terms <- sort(terms)
+	terms <- terms[!is.na(terms)]
 	if(record.secondary.data)
 	{	cat("Recording the corpus terms\n")
 		dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
