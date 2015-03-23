@@ -24,7 +24,7 @@ library("doParallel")
 source("WordCooc/com-measures.R")
 source("WordCooc/misc.R")
 
-# TODO we could also consider directed networks (and all the adapted measures)
+# TODO for directed networks >> adapt the measures
 
 # Whether or not to record secondary data such as co-occurrence
 # networks, list of terms, co-occurrence matrix, etc.
@@ -34,6 +34,9 @@ record.secondary.data <- FALSE
 # anywhere in the considered user's tweets. FALSE allows focusing
 # only on the words actually used.
 output.full.matrix <- FALSE
+# Whether the co-occurrence graphs should be directed (TRUE)
+# or not (FALSE)
+directed <- FALSE
 
 # set up in/out folders
 #in.folder <- "WordCooc/in/tweets/"
@@ -169,7 +172,7 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	# count co-occurrences
 	#co.counts <- table(factor(pairs[,1],levels=terms),factor(pairs[,2],levels=terms))
 	#co.counts <- table(factor(pairs[,1],levels=local.terms),factor(pairs[,2],levels=local.terms))
-	co.counts <- process.adjacency(mat=pairs, sym=TRUE, levels=local.terms)
+	co.counts <- process.adjacency(mat=pairs, sym=!directed, levels=local.terms)
 	
 	# record co-occurrence matrix
 #	if(record.secondary.data)
@@ -179,7 +182,11 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	
 	# build the networks
 	cat("Building the network\n")
-	g <- graph.adjacency(adjmatrix=co.counts,mode="undirected",weighted=TRUE
+	if(directed)
+		mode <- "directed"
+	else
+		mode <- "undirected"
+	g <- graph.adjacency(adjmatrix=co.counts,mode=mode,weighted=TRUE
 			#,add.rownames="label" # not necessary (redundant with the 'name' attribute)
 		)
 	V(g)$frequency <- counts#graph.strength(g)
@@ -282,6 +289,8 @@ for(i in 1:(length(text.files)-1))
 		# taken from http://math.stackexchange.com/questions/507742/distance-similarity-between-two-matrices
 		m <- co.count1 - co.count2
 		d <- sqrt(sum(m*m))
+		# note: for undirected networks, the lower triangle should be ignored when summing
+		# however, here the trace is zero, so this doesn't affect the final result
 		result <- c(result,d)
 		names1 <- c(names1,name1)
 		names2 <- c(names2,name2)
