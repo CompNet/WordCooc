@@ -36,17 +36,23 @@ record.secondary.data <- FALSE
 output.full.matrix <- FALSE
 
 # set up in/out folders
-log.file <- "WordCooc/out/log.txt"
 #in.folder <- "WordCooc/in/tweets/"
 #out.folder <- "WordCooc/out/tweets/"
+#log.file <- "WordCooc/out/log.txt"
+##
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent_features/"
+##
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
+##
 in.folder <- "~/work/data/training/"
 out.folder <- "~/work/data/training_features/"
+log.file <- "~/work/data/training_features/log.txt"
+##
 #in.folder <- "~/work/data/test/"
 #out.folder <- "~/work/data/test_features/"
+#log.file <- "~/work/data/test_features/log.txt"
 
 # set up log
 sink(file=log.file, append=FALSE, split=TRUE)
@@ -114,18 +120,26 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	subfolder <- paste(out.folder,text.file,"/",sep="")
 	dir.create(subfolder,recursive=TRUE,showWarnings=FALSE)
 	
-	# remove empty sentences
-	sentences <- sentences[nchar(sentences,type="bytes")>0]
-	
 	# split each line in columns using tab as a separator
 	cat("Spliting sentences\n")
 	cols <- strsplit(sentences, "\t")
 	
-	# split each sentence using space as a separator
-	words <- lapply(cols,function(c) 
-			{	sentence <- paste(c[4:length(c)])
-				return(strsplit(sentence, " ")[[1]])
+	# select the 4th column (sentence)
+	words <- lapply(cols,function(col) 
+			{	if(length(col)>3)
+					paste(col[4:length(col)])
+				else
+					NA
 			})
+	
+	# possibly remove empty sentences
+	idx <- which(sapply(words,is.na))
+	if(length(idx)>0)
+		words <- words[-idx]
+
+	# split each sentence using space as a separator
+	words <- lapply(words,function(w) 
+				strsplit(w, " ")[[1]])
 	
 	# identify and record local terms
 	local.terms <- sort(unique(unlist(words)))
@@ -222,7 +236,59 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	# plot graph
 #	plot(g,vertex.size=4,vertex.label="")
 }
+
+# stop parallel mode
 stopCluster(par.clust)
+
+
+# process inter-user distances based on the graphs
+cat("Start processing the distances\n")
+# init result vectors
+result <- c()
+names1 <- c()
+names2 <- c()
+# treat each pair of users (i.e. graphs)
+for(i in 1:(length(text.files)-1))
+{	# set up folder
+	text.file1 <- text.files[i]
+	name1 <- strsplit(text.file1,"_texts.tsv.out")[[1]]
+	subfolder1 <- paste(out.folder,text.file1,"/",sep="")
+	cat("..Processing file ",text.file1," (",i,"/",(length(text.files)-1),")\n",sep="")
+	
+	# get (partial) adjacency matrix
+	m <- as.matrix(read.table(file=paste(subfolder1,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
+#	colnames(m) <- rownames(m)
+	co.count1 <- matrix(0,nrow=length(terms),ncol=length(terms))
+	rownames(co.count1) <- terms
+	colnames(co.count1) <- terms
+	co.count1[rownames(m),colnames(m)] <- m
+	
+	# compare to all other matrices (located after this one in the list of files)
+	for(j in (i+1):length(text.files))
+	{	# retrieve the other matrix
+		text.file2 <- text.files[j]
+		name2 <- strsplit(text.file2,"_texts.tsv.out")[[1]]
+		subfolder2 <- paste(out.folder,text.file2,"/",sep="")
+		cat("....Versus file ",text.file2," (",(j-i),"/",(length(text.files)-i),")\n",sep="")
+		
+		m <- as.matrix(read.table(file=paste(subfolder2,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
+		co.count2 <- matrix(0,nrow=length(terms),ncol=length(terms))
+		rownames(co.count2) <- terms
+		colnames(co.count2) <- terms
+		co.count2[rownames(m),colnames(m)] <- m
+		
+		# process distance and add to result vectors
+		# taken from http://math.stackexchange.com/questions/507742/distance-similarity-between-two-matrices
+		m <- co.count1 - co.count2
+		d <- sqrt(sum(m*m))
+		result <- c(result,d)
+		names1 <- c(names1,name1)
+		names2 <- c(names2,name2)
+	}
+}	
+# record vectors
+df <- data.frame("User1"=names1, "User2"=names2, "Distance"=result)
+write.table(x=df,file=paste(out.folder,"distances.txt",sep=""),quote=FALSE,row.names=TRUE,col.names=FALSE)
 
 # disable logging
 sink()
