@@ -27,7 +27,7 @@ source("WordCooc/misc.R")
 # from word1 to word2, but not in the other direction. 
 # If FALSE, both sequences word1 word2 and word2 word1 are
 # considered similarly.
-directed <- TRUE 
+directed <- FALSE 
 
 # States how to consider separators. Separators are words belonging 
 # to no topic at all. If "ignore", they are just removed from the
@@ -55,6 +55,15 @@ topic.names <- sort(unique(topic.map[,2]))
 topic.map <- rbind(topic.map,c("NA","SEP")) # add the separator symbol
 if(separator=="explicit")
 	topic.names <- sort(unique(topic.map[,2]))
+
+# set up levels for triplets
+trilev <- expand.grid(topic.names,topic.names,topic.names)
+if(directed)
+{	trilev <- apply(trilev, 1, function(v) paste(rev(v),collapse="-"))
+}else
+{	trilev <- apply(trilev, 1, function(v) paste(sort(v),collapse="-"))
+	trilev <- sort(unique(trilev))
+}		
 
 # get text files
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
@@ -104,16 +113,16 @@ for(text.file in text.files)
 	}
 	
 	# build the matrices of adjacent words
-	cat("Counting topic co-occurrencess\n")
+	cat("Counting pair co-occurrencess\n")
 	pairs <- lapply(topics,function(v) 
 				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
 	
 	# build the adjacency matrices
 	co.counts <- lapply(pairs, function(m) 
 				process.adjacency(mat=m, sym=!directed, levels=topic.names))
-		
+	
 	# record co-occurrence matrices (only the non-redundant part)
-	cat("recording co-occurrence matrices as vectors\n")
+	cat("Recording co-occurrence matrices as vectors\n")
 	sapply(1:length(co.counts), function(i) 
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
@@ -126,7 +135,7 @@ for(text.file in text.files)
 				names(data) <- paste(m[,1],m[,2],sep="-")
 				write.table(x=data,file=paste(sentence.folder,prefix,"coocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
 			})
-
+	
 	# build the networks
 #	cat("Building networks\n")
 #	nets <- lapply(1:length(co.counts),function(i) 
@@ -139,4 +148,27 @@ for(text.file in text.files)
 #				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
 #				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"topic-network.graphml",sep=""),format="graphml")
 #			})
+
+	# matrix of triplets
+	cat("Counting triplet co-occurrencess\n")
+	triplets <- lapply(topics,function(v) 
+					cbind(v[1:(length(v)-2)],v[2:(length(v)-1)],v[3:(length(v))]))
+
+	# counting triplets
+	merged <- lapply(triplets, function(m) 
+				apply(m, 1, function(v) 
+						{	if(!directed)
+								v <- sort(v)
+							paste(v,collapse="-")
+						})
+				)
+	coco.counts <- lapply(merged, function(v) table(factor(v,levels=trilev)))
+	
+	# recording triplet counts
+	lapply(1:length(coco.counts), function(i)
+			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+				m <- coco.counts[[i]]
+				write.table(x=m,file=paste(sentence.folder,prefix,"triplocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
+			})
 }
