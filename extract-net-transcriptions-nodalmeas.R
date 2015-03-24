@@ -97,19 +97,19 @@ for(text.file in text.files)
 	# process centralities
 	cat("Processing centralities\n")
 	nets <- lapply(nets,function(g) 
-			{	V(g)$degree <- degree(g)
-				V(g)$betweenness <- betweenness(g)
-				V(g)$closeness <- closeness(g)
-				V(g)$spectral <- evcent(g)$vector
-				V(g)$subgraph <- subgraph.centrality(g)
+			{	V(g)$Degree <- degree(g)
+				V(g)$Betweenness <- betweenness(g)
+				V(g)$Closeness <- closeness(g)
+				V(g)$Spectral <- evcent(g)$vector
+				V(g)$Subgraph <- subgraph.centrality(g)
 				return(g)
 			})
 	
 	# process other nodal measures
 	cat("Processing other measures\n")
 	nets <- lapply(nets,function(g) 
-			{	V(g)$eccentricity <- eccentricity(g)
-				V(g)$transitivity <- transitivity(graph=g, type="localundirected",isolates="zero")
+			{	V(g)$Eccentricity <- eccentricity(g)
+				V(g)$Transitivity <- transitivity(graph=g, type="localundirected",isolates="zero")
 				return(g)
 			})
 	
@@ -118,10 +118,10 @@ for(text.file in text.files)
 	nets <- lapply(nets,function(g) 
 			{	coms <- infomap.community(graph=g,modularity=FALSE)
 				membr <- membership(coms)
-				V(g)$community <- membr
-				V(g)$embeddeness <- process.embeddedness(g)
-				V(g)$gawithindeg <- process.ga.withindeg(g)
-				V(g)$gapartcoef <- process.ga.partcoef(g)
+				V(g)$Community <- membr
+				V(g)$Embeddedness <- process.embeddedness(g)
+				V(g)$GaWithinDeg <- process.ga.withindeg(g)
+				V(g)$GaPartCoef <- process.ga.partcoef(g)
 				return(g)
 			})
 	

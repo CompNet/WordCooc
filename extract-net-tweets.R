@@ -39,9 +39,9 @@ output.full.matrix <- FALSE
 directed <- FALSE
 
 # set up in/out folders
-#in.folder <- "WordCooc/in/tweets/"
-#out.folder <- "WordCooc/out/tweets/"
-#log.file <- "WordCooc/out/log.txt"
+in.folder <- "WordCooc/in/tweets/"
+out.folder <- "WordCooc/out/tweets/"
+log.file <- "WordCooc/out/log.txt"
 ##
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent_features/"
@@ -49,9 +49,9 @@ directed <- FALSE
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
 ##
-in.folder <- "~/work/data/training/"
-out.folder <- "~/work/data/training_features/"
-log.file <- "~/work/data/training_features/log.txt"
+#in.folder <- "~/work/data/training/"
+#out.folder <- "~/work/data/training_features/"
+#log.file <- "~/work/data/training_features/log.txt"
 ##
 #in.folder <- "~/work/data/test/"
 #out.folder <- "~/work/data/test_features/"
@@ -113,8 +113,8 @@ cat("\n")
 
 # process each text file
 cat("Start extracting the networks\n")
-#for(i in 1:length(text.files))
-foreach(i=1:length(text.files), .packages="igraph") %dopar%
+for(i in 1:length(text.files))
+#foreach(i=1:length(text.files), .packages="igraph") %dopar%
 {	# read the file line-by-line
 	text.file <- text.files[i]
 	cat("Reading sentences for file ",i,"/",length(text.files)," ",text.file,"\n",sep="")
@@ -189,29 +189,43 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	g <- graph.adjacency(adjmatrix=co.counts,mode=mode,weighted=TRUE
 			#,add.rownames="label" # not necessary (redundant with the 'name' attribute)
 		)
-	V(g)$frequency <- counts#graph.strength(g)
+	V(g)$Frequency <- counts#graph.strength(g)
 
 	# process centralities
 	cat("Processing centralities\n")
-	V(g)$degree <- degree(g)
-	V(g)$betweenness <- betweenness(g)
-	V(g)$closeness <- closeness(g)
-	V(g)$spectral <- evcent(g)$vector
-	V(g)$subgraph <- subgraph.centrality(g)
+	V(g)$Degree <- degree(g)
+	V(g)$Betweenness <- betweenness(g)
+	V(g)$Closeness <- closeness(g)
+	V(g)$Spectral <- evcent(g)$vector
+	V(g)$Subgraph <- subgraph.centrality(g)
 	
 	# process other nodal measures
 	cat("Processing other measures\n")
-	V(g)$eccentricity <- eccentricity(g)
-	V(g)$transitivity <- transitivity(graph=g, type="localundirected",isolates="zero")
+	V(g)$Eccentricity <- eccentricity(g)
+	V(g)$Transitivity <- transitivity(graph=g, type="localundirected",isolates="zero")
 	
 	# detect communities and process related measures
 	cat("Processing community-related measures\n")
 	coms <- infomap.community(graph=g,modularity=FALSE)
 	membr <- membership(coms)
-	V(g)$community <- membr
-	V(g)$embeddeness <- process.embeddedness(g)
-	V(g)$gawithindeg <- process.ga.withindeg(g)
-	V(g)$gapartcoef <- process.ga.partcoef(g)
+	V(g)$Community <- membr
+	V(g)$Embeddedness <- process.embeddedness(g)
+	V(g)$GaWithinDeg <- process.ga.withindeg(g)
+	V(g)$GaPartCoef <- process.ga.partcoef(g)
+	
+	# add global measures
+	g$Size <- vcount(g)
+	g$Density <- graph.density(g)
+	g$NormMaxDegree <- max(V(g)$Degree)/vcount(g)
+	g$AvrgDegree <- mean(V(g)$Degree)
+	g$AvrgBetweenness <- mean(V(g)$Betweenness)
+	g$AvrgSpectral <- mean(V(g)$Spectral)
+	g$AvrgSubgraph <- mean(V(g)$Subgraph)
+	g$AvrgEccentricity <- mean(V(g)$Eccentricity)
+	g$AvrgTransitivity <- mean(V(g)$Transitivity)
+	g$AvrgEmbeddedness <- mean(V(g)$Embeddedness)
+	g$AvrgGaWithinDeg <- mean(V(g)$GaWithinDeg)
+	g$AvrgGaPartCoef <- mean(V(g)$GaPartCoef)
 	
 	# record the network (including all available info)
 	if(record.secondary.data)
@@ -221,10 +235,10 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	
 	# record all feature vectors in a single file
 	cat("Recording the data\n")
-	meas.names <- c("frequency",
-			"degree","betweenness","closeness","spectral","subgraph",
-			"eccentricity","transitivity",
-			"community","embeddeness","gawithindeg","gapartcoef")
+	meas.names <- c("Frequency",
+			"Degree","Betweenness","Closeness","Spectral","Subgraph",
+			"Eccentricity","Transitivity",
+			"Community","Embeddedness","GaWithinDeg","GaPartCoef")
 	if(output.full.matrix)
 		indices <- local.terms.indices
 	else
@@ -233,16 +247,27 @@ foreach(i=1:length(text.files), .packages="igraph") %dopar%
 	colnames(data) <- meas.names
 	for(meas.name in meas.names)
 		data[indices,meas.name] <- get.vertex.attribute(graph=g,name=meas.name)
-	data <- round(data,digits=4)
+	data <- round(data,digits=4) # limit to 4 decimals
 	if(output.full.matrix)
-		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"features.txt",sep=""),row.names=FALSE,col.names=TRUE, quote=FALSE, sep="\t")
+		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"local.features.txt",sep=""),row.names=FALSE,col.names=TRUE, quote=FALSE, sep="\t")
 	else
 	{	rownames(data) <- local.terms
-		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"features.txt",sep=""),row.names=TRUE,col.names=TRUE, quote=FALSE, sep="\t")
+		write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"local.features.txt",sep=""),row.names=TRUE,col.names=TRUE, quote=FALSE, sep="\t")
 	}
 
 	# plot graph
 #	plot(g,vertex.size=4,vertex.label="")
+
+	# record global measures in a separate file
+	meas.names <- c("Size","Density",
+			"NormMaxDegree","AvrgDegree","AvrgBetweenness","AvrgSpectral","AvrgSubgraph",
+			"AvrgEccentricity","AvrgTransitivity",
+			"AvrgEmbeddedness","AvrgGaWithinDeg","AvrgGaPartCoef")
+	data <- sapply(meas.names,function(meas.name)
+				get.graph.attribute(graph=g,name=meas.name))
+	names(data) <- meas.names
+	data <- round(data,digits=4) # limit to 4 decimals
+	write.table(x=format(data,scientific=FALSE),file=paste(subfolder,"global.features.txt",sep=""),row.names=TRUE,col.names=FALSE, quote=FALSE, sep="\t")
 }
 
 # stop parallel mode

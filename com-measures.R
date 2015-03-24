@@ -14,7 +14,7 @@ process.neigh.coms <- function(graph)
 	# process the associated communities
 	coms <- lapply(1:vcount(graph),function(u)
 			{	nall <- neigh[[u]][neigh[[u]]!=u]
-				V(graph)$community[nall]
+				V(graph)$Community[nall]
 			})
 	return(coms)	
 }
@@ -31,10 +31,10 @@ process.embeddedness <- function(graph)
 {	coms <- process.neigh.coms(graph)
 	internal.degree <- sapply(1:vcount(graph), function(u)
 			{	neigh.coms <- coms[[u]]
-				own.com <- V(graph)$community[u]
+				own.com <- V(graph)$Community[u]
 				length(which(neigh.coms==own.com))
 			})
-	result <- internal.degree / V(graph)$degree
+	result <- internal.degree / V(graph)$Degree
 	
 	# possibly replace NaN by zeros
 	idx <- which(is.nan(result))
@@ -84,10 +84,10 @@ process.ga.withindeg <- function(graph)
 {	coms <- process.neigh.coms(graph)
 	internal.degree <- sapply(1:vcount(graph), function(u)
 			{	neigh.coms <- coms[[u]]
-				own.com <- V(graph)$community[u]
+				own.com <- V(graph)$Community[u]
 				length(which(neigh.coms==own.com))
 			})
-	result <- process.community.zscores(values=internal.degree,V(graph)$community)
+	result <- process.community.zscores(values=internal.degree,V(graph)$Community)
 	return(result)
 }
 
