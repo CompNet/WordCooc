@@ -287,21 +287,21 @@ for(i in 1:(length(text.files)-1))
 #		colnames(co.count2) <- terms
 #		co.count2[rownames(m),colnames(m)] <- m
 		
-		common.terms <- sort(unique(rownames(c(co.count1),rownames(co.count2))))
+		common.terms <- sort(unique(c(rownames(co.count1),rownames(co.count2))))
 		# first matrix
 			m1 <- matrix(0,nrow=length(common.terms),ncol=length(common.terms))
 			rownames(m1) <- common.terms
 			colnames(m1) <- common.terms
-			co.count1[rownames(co.count1),colnames(co.count1)] <- co.count1
+			m1[rownames(co.count1),colnames(co.count1)] <- co.count1
 		# second matrix
 			m2 <- matrix(0,nrow=length(common.terms),ncol=length(common.terms))
 			rownames(m2) <- common.terms
 			colnames(m2) <- common.terms
-			co.count2[rownames(co.count2),colnames(co.count2)] <- co.count2
+			m2[rownames(co.count2),colnames(co.count2)] <- co.count2
 			
 		# process distance and add to result vectors
 		# taken from http://math.stackexchange.com/questions/507742/distance-similarity-between-two-matrices
-		m <- co.count1 - co.count2
+		m <- m1 - m2
 		d <- sqrt(sum(m*m))
 		# note: for undirected networks, the lower triangle should be ignored when summing
 		# however, here the trace is zero, so this doesn't affect the final result
