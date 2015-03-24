@@ -58,6 +58,7 @@ out.folder <- "~/work/data/test_features/"
 log.file <- "~/work/data/test_features/log.txt"
 
 # set up log
+dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
 sink(file=log.file, append=FALSE, split=TRUE)
 
 # get text files
