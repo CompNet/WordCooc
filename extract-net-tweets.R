@@ -264,12 +264,13 @@ for(i in 1:(length(text.files)-1))
 	cat("..Processing file ",text.file1," (",i,"/",(length(text.files)-1),")\n",sep="")
 	
 	# get (partial) adjacency matrix
-	m <- as.matrix(read.table(file=paste(subfolder1,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
-#	colnames(m) <- rownames(m)
-	co.count1 <- matrix(0,nrow=length(terms),ncol=length(terms))
-	rownames(co.count1) <- terms
-	colnames(co.count1) <- terms
-	co.count1[rownames(m),colnames(m)] <- m
+#	m <-
+	co.count1 <- as.matrix(read.table(file=paste(subfolder1,"coocurrences.txt",sep=""),header=TRUE,row.names=1,
+					check.names=FALSE)) # otherwise, an "X" is added in front of the colnames
+#	co.count1 <- matrix(0,nrow=length(terms),ncol=length(terms))
+#	rownames(co.count1) <- terms
+#	colnames(co.count1) <- terms
+#	co.count1[rownames(m),colnames(m)] <- m
 	
 	# compare to all other matrices (located after this one in the list of files)
 	for(j in (i+1):length(text.files))
@@ -279,12 +280,25 @@ for(i in 1:(length(text.files)-1))
 		subfolder2 <- paste(out.folder,text.file2,"/",sep="")
 		cat("....Versus file ",text.file2," (",(j-i),"/",(length(text.files)-i),")\n",sep="")
 		
-		m <- as.matrix(read.table(file=paste(subfolder2,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
-		co.count2 <- matrix(0,nrow=length(terms),ncol=length(terms))
-		rownames(co.count2) <- terms
-		colnames(co.count2) <- terms
-		co.count2[rownames(m),colnames(m)] <- m
+#		m <- 
+		co.count2 <- as.matrix(read.table(file=paste(subfolder2,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
+#		co.count2 <- matrix(0,nrow=length(terms),ncol=length(terms))
+#		rownames(co.count2) <- terms
+#		colnames(co.count2) <- terms
+#		co.count2[rownames(m),colnames(m)] <- m
 		
+		common.terms <- sort(unique(rownames(c(co.count1),rownames(co.count2))))
+		# first matrix
+			m1 <- matrix(0,nrow=length(common.terms),ncol=length(common.terms))
+			rownames(m1) <- common.terms
+			colnames(m1) <- common.terms
+			co.count1[rownames(co.count1),colnames(co.count1)] <- co.count1
+		# second matrix
+			m2 <- matrix(0,nrow=length(common.terms),ncol=length(common.terms))
+			rownames(m2) <- common.terms
+			colnames(m2) <- common.terms
+			co.count2[rownames(co.count2),colnames(co.count2)] <- co.count2
+			
 		# process distance and add to result vectors
 		# taken from http://math.stackexchange.com/questions/507742/distance-similarity-between-two-matrices
 		m <- co.count1 - co.count2

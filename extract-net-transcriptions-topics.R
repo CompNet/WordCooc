@@ -133,7 +133,7 @@ for(text.file in text.files)
 				m <- na.omit(m)							# possibly remove NAs
 				data <- m[,3]
 				names(data) <- paste(m[,1],m[,2],sep="-")
-				write.table(x=data,file=paste(sentence.folder,prefix,"coocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
+#				write.table(x=data,file=paste(sentence.folder,prefix,"coocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
 			})
 	
 	# build the networks
@@ -169,6 +169,6 @@ for(text.file in text.files)
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
 				m <- coco.counts[[i]]
-				write.table(x=m,file=paste(sentence.folder,prefix,"triplocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
+				write.table(x=m,file=paste(sentence.folder,prefix,"triplocurrences.txt",sep=""),col.names=FALSE,row.names=FALSE,quote=FALSE)
 			})
 }
