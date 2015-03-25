@@ -102,7 +102,9 @@ for(text.file in text.files)
 	if(separator=="ignore")
 	{	topics <- lapply(topics,function(v) 
 				{	idx <- which(v=="SEP")
-					v <- v[-idx]
+					if(length(idx)>0)
+						v <- v[-idx]
+					return(v)
 				})
 		# possibly update indices for empty sentences
 		idx.rmd <- which(sapply(topics,length)==0)
@@ -133,26 +135,26 @@ for(text.file in text.files)
 				m <- na.omit(m)							# possibly remove NAs
 				data <- m[,3]
 				names(data) <- paste(m[,1],m[,2],sep="-")
-#				write.table(x=data,file=paste(sentence.folder,prefix,"coocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
+				write.table(x=data,file=paste(sentence.folder,prefix,"coocurrences.txt",sep=""),col.names=FALSE,quote=FALSE)
 			})
 	
 	# build the networks
-#	cat("Building networks\n")
-#	nets <- lapply(1:length(co.counts),function(i) 
-#				g <- graph.adjacency(adjmatrix=co.counts[[i]],mode="undirected",weighted=TRUE))
+	cat("Building networks\n")
+	nets <- lapply(1:length(co.counts),function(i) 
+				g <- graph.adjacency(adjmatrix=co.counts[[i]],mode="undirected",weighted=TRUE))
 
 	# record the networks (including all available info)
-#	cat("Recording networks\n")
-#	nets <- lapply(1:length(nets),function(i) 
-#			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-#				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-#				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"topic-network.graphml",sep=""),format="graphml")
-#			})
+	cat("Recording networks\n")
+	nets <- lapply(1:length(nets),function(i) 
+			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"topic-network.graphml",sep=""),format="graphml")
+			})
 
 	# matrix of triplets
 	cat("Counting triplet co-occurrencess\n")
 	triplets <- lapply(topics,function(v) 
-					cbind(v[1:(length(v)-2)],v[2:(length(v)-1)],v[3:(length(v))]))
+				cbind(v[1:(length(v)-2)],v[2:(length(v)-1)],v[3:(length(v))]))
 
 	# counting triplets
 	merged <- lapply(triplets, function(m) 
@@ -162,7 +164,8 @@ for(text.file in text.files)
 							paste(v,collapse="-")
 						})
 				)
-	coco.counts <- lapply(merged, function(v) table(factor(v,levels=trilev)))
+	coco.counts <- lapply(merged, function(v) 
+				table(factor(v,levels=trilev)))
 	
 	# recording triplet counts
 	lapply(1:length(coco.counts), function(i)
