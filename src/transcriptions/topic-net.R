@@ -15,11 +15,11 @@
 #
 # setwd("C:/Eclipse/workspaces/Extraction/")
 # setwd("~/Eclipse/workspaces/Extraction/")
-# source("WordCooc/extract-net-transcriptions-topics.R")
+# source("WordCooc/src/tweets/topic-net.R")
 #######################################################
 library("igraph")
 
-source("WordCooc/misc.R")
+source("WordCooc/src/common/misc.R")
 
 
 # States whether word order should be considered or not.
@@ -69,6 +69,7 @@ if(directed)
 text.files <- list.files(path=in.folder,full.names=FALSE,no..=TRUE)
 print(text.files)
 
+##################################################################
 # process each text file
 for(text.file in text.files)
 {	# read the file line-by-line
