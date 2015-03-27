@@ -33,13 +33,13 @@ directed <- FALSE
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/test/out_vincent_features/"
 ##
-#in.folder <- "~/work/data/training/"
-#out.folder <- "~/work/data/training_features/"
-#log.file <- "~/work/data/training_features/log.txt"
+in.folder <- "~/work/data/training/"
+out.folder <- "~/work/data/training_features/"
+log.file <- "~/work/data/training_features/log.txt"
 ##
-in.folder <- "~/work/data/test/"
-out.folder <- "~/work/data/test_features/"
-log.file <- "~/work/data/test_features/log.txt"
+#in.folder <- "~/work/data/test/"
+#out.folder <- "~/work/data/test_features/"
+#log.file <- "~/work/data/test_features/log.txt"
 
 # set up log
 dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
@@ -116,11 +116,11 @@ foreach(i=1:(length(text.files)-1)) %dopar%
 		result <- c(result,d)
 		names1 <- c(names1,name1)
 		names2 <- c(names2,name2)
-		
-		# record vectors
-		df <- data.frame("User1"=names1, "User2"=names2, "Distance"=result)
-		write.table(x=df,file=paste(subfolder1,"distances.txt",sep=""),quote=FALSE,row.names=TRUE,col.names=FALSE)
 	}
+	
+	# record vectors
+	df <- data.frame("User1"=names1, "User2"=names2, "Distance"=result)
+	write.table(x=df,file=paste(subfolder1,"distances.txt",sep=""),quote=FALSE,row.names=TRUE,col.names=FALSE)
 }	
 ## record vectors
 #df <- data.frame("User1"=names1, "User2"=names2, "Distance"=result)
