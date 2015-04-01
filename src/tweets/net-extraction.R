@@ -39,9 +39,9 @@ output.full.matrix <- FALSE
 directed <- FALSE
 
 # set up in/out folders
-#in.folder <- "WordCooc/in/tweets/"
-#out.folder <- "WordCooc/out/tweets/"
-#log.file <- "WordCooc/out/log.txt"
+in.folder <- "WordCooc/in/tweets/"
+out.folder <- "WordCooc/out/tweets/"
+log.file <- "WordCooc/out/log.txt"
 ##
 #in.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent/"
 #out.folder <- "/home/imagiweb/works/Replab2014/replab2014_corpus_training_testunlabeled/author_profiling/training/out_vincent_features/"
@@ -53,9 +53,9 @@ directed <- FALSE
 #out.folder <- "~/work/data/training_features/"
 #log.file <- "~/work/data/training_features/log.txt"
 ##
-in.folder <- "~/work/data/test/"
-out.folder <- "~/work/data/test_features/"
-log.file <- "~/work/data/test_features/log.txt"
+#in.folder <- "~/work/data/test/"
+#out.folder <- "~/work/data/test_features/"
+#log.file <- "~/work/data/test_features/log.txt"
 
 # set up log
 dir.create(out.folder,recursive=TRUE,showWarnings=FALSE)
