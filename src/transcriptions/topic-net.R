@@ -163,34 +163,65 @@ for(text.file in text.files)
 
 	# record the networks (including all available info)
 	cat("Recording networks\n")
-	nets <- lapply(1:length(nets),function(i) 
+	lapply(1:length(nets),function(i) 
 			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
 				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"network.graphml",sep=""),format="graphml")
 			})
 
-	####### 3 topics
-	# matrix of triplets
-	cat("Counting triplet co-occurrencess\n")
-	triplets <- lapply(topics,function(v) 
-				cbind(v[1:(length(v)-2)],v[2:(length(v)-1)],v[3:(length(v))]))
-
-	# counting triplets
-	merged <- lapply(triplets, function(m) 
-				apply(m, 1, function(v) 
-						{	if(!directed)
-								v <- sort(v)
-							paste(v,collapse="-")
-						})
-				)
-	coco.counts <- lapply(merged, function(v) 
-				table(factor(v,levels=trilev)))
+	# networks of higher orders
+	orders.mat <- lapply(topics, function(top)
+	{	lapply(0:3, function(k)
+		{	# remove certain topics in the original vectors
+			partial.topics <- lapply(0:k, function(i)
+				top[seq(1+i,length(top),k+1)])
+			
+			# process the matrices of pairs of (pseudo)consecutive topics
+			partial.pairs <- lapply(partial.topics,function(v)
+				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
+			
+			# process the corresponding cooccurrence matrices 
+			partial.co.counts <- lapply(partial.pairs, function(m)
+				process.adjacency(mat=m, sym=!directed, levels=topic.names))
+			
+			# sum the list of matrices to get a single total matrix
+			m <- Reduce('+',l.tmp) 
+			
+			# possibly keep only the upper triangle of the total matrix, and linearize it
+			if(!directed)							# if the graph is undirected, the matrix is symmetrical
+				m[lower.tri(m,diag=FALSE)] <- NA	# put NA in the lower triangle of the matrix
+			m <- as.data.frame(as.table(m))  		# turn into a 3-column table
+			m <- na.omit(m)							# possibly remove NAs
+			data <- m[,3]
+			names(data) <- paste(m[,1],m[,2],sep="-")
+			return(data)	
+		})
+	})
+	# record the resulting linearized matrices
 	
-	# recording triplet counts
-	lapply(1:length(coco.counts), function(i)
-			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				m <- coco.counts[[i]]
-				write.table(x=m,file=paste(sentence.folder,prefix,"triplets.txt",sep=""),col.names=FALSE,row.names=FALSE,quote=FALSE)
-			})
+	
+	####### 3 topics
+#	# matrix of triplets
+#	cat("Counting triplet co-occurrencess\n")
+#	triplets <- lapply(topics,function(v) 
+#				cbind(v[1:(length(v)-2)],v[2:(length(v)-1)],v[3:(length(v))]))
+#
+#	# counting triplets
+#	merged <- lapply(triplets, function(m) 
+#				apply(m, 1, function(v) 
+#						{	if(!directed)
+#								v <- sort(v)
+#							paste(v,collapse="-")
+#						})
+#				)
+#	coco.counts <- lapply(merged, function(v) 
+#				table(factor(v,levels=trilev)))
+#	
+#	# recording triplet counts
+#	lapply(1:length(coco.counts), function(i)
+#			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+#				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+#				m <- coco.counts[[i]]
+#				write.table(x=m,file=paste(sentence.folder,prefix,"triplets.txt",sep=""),col.names=FALSE,row.names=FALSE,quote=FALSE)
+#			})
 }
