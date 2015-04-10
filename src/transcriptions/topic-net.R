@@ -40,6 +40,7 @@ separator <- "ignore" # ignore explicit implicit
 
 # set up in/out folders
 in.folder <- "WordCooc/in/clean2/"
+#in.folder <- "WordCooc/in/test/"
 in.map <- "WordCooc/in/discriminativeWordsListForEachTheme_200.txt"
 out.folder <- "WordCooc/out/topics/"
 
@@ -118,74 +119,78 @@ for(text.file in text.files)
 	}
 	
 	####### 1 topic
-	# process the frequency of topics
-	cat("Counting topics\n")
-	freq <- lapply(topics,function(v) 
-				as.matrix(table(factor(v,levels=topic.names))))
-	
-	# record topic frequencies
-	cat("Recording topic frequences\n")
-	sapply(1:length(freq), function(i) 
-		{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-			write.table(x=freq[[i]],file=paste(sentence.folder,"separator=",separator,".freq.txt",sep=""),col.names=FALSE,quote=FALSE)
-		})
+#	# process the frequency of topics
+#	cat("Counting topics\n")
+#	freq <- lapply(topics,function(v) 
+#				as.matrix(table(factor(v,levels=topic.names))))
+#	
+#	# record topic frequencies
+#	cat("Recording topic frequencies\n")
+#	sapply(1:length(freq), function(i) 
+#		{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+#			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+#			write.table(x=freq[[i]],file=paste(sentence.folder,"separator=",separator,".freq.txt",sep=""),col.names=FALSE,quote=FALSE)
+#		})
 	
 	####### 2 topics
-	# build the matrices of adjacent words
-	cat("Counting pair co-occurrencess\n")
-	pairs <- lapply(topics,function(v) 
-				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
-	
-	# build the adjacency matrices
-	co.counts <- lapply(pairs, function(m) 
-				process.adjacency(mat=m, sym=!directed, levels=topic.names))
-	
-	# record co-occurrence matrices (only the non-redundant part)
-	cat("Recording co-occurrence matrices as vectors\n")
-	sapply(1:length(co.counts), function(i) 
-			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				m <- co.counts[[i]]
-				if(!directed)							# if the graph is undirected, the matrix is symmetrical
-					m[lower.tri(m,diag=FALSE)] <- NA	# put NA in the lower triangle of the matrix
-				m <- as.data.frame(as.table(m))  		# turn into a 3-column table
-				m <- na.omit(m)							# possibly remove NAs
-				data <- m[,3]
-				names(data) <- paste(m[,1],m[,2],sep="-")
-				write.table(x=data,file=paste(sentence.folder,prefix,"pairs.txt",sep=""),col.names=FALSE,quote=FALSE)
-			})
-	
-	# build the networks
-	cat("Building networks\n")
-	nets <- lapply(1:length(co.counts),function(i) 
-				g <- graph.adjacency(adjmatrix=co.counts[[i]],mode="undirected",weighted=TRUE))
-
-	# record the networks (including all available info)
-	cat("Recording networks\n")
-	lapply(1:length(nets),function(i) 
-			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"network.graphml",sep=""),format="graphml")
-			})
+#	# build the matrices of adjacent words
+#	cat("Counting pair co-occurrencess\n")
+#	pairs <- lapply(topics,function(v) 
+#				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
+#	
+#	# build the adjacency matrices
+#	co.counts <- lapply(pairs, function(m) 
+#				process.adjacency(mat=m, sym=!directed, levels=topic.names))
+#	
+#	# record co-occurrence matrices (only the non-redundant part)
+#	cat("Recording co-occurrence matrices as vectors\n")
+#	sapply(1:length(co.counts), function(i) 
+#			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+#				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+#				m <- co.counts[[i]]
+#				if(!directed)							# if the graph is undirected, the matrix is symmetrical
+#					m[lower.tri(m,diag=FALSE)] <- NA	# put NA in the lower triangle of the matrix
+#				m <- as.data.frame(as.table(m))  		# turn into a 3-column table
+#				m <- na.omit(m)							# possibly remove NAs
+#				data <- m[,3]
+#				names(data) <- paste(m[,1],m[,2],sep="-")
+#				write.table(x=data,file=paste(sentence.folder,prefix,"pairs.txt",sep=""),col.names=FALSE,quote=FALSE)
+#			})
+#	
+#	# build the networks
+#	cat("Building networks\n")
+#	nets <- lapply(1:length(co.counts),function(i) 
+#				g <- graph.adjacency(adjmatrix=co.counts[[i]],mode="undirected",weighted=TRUE))
+#
+#	# record the networks (including all available info)
+#	cat("Recording networks\n")
+#	lapply(1:length(nets),function(i) 
+#			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+#				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+#				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"network.graphml",sep=""),format="graphml")
+#			})
 
 	# networks of higher orders
+	cat("Processing higher-order networks\n")
 	orders.mat <- lapply(topics, function(top)
-	{	lapply(0:3, function(k)
+	{	temp.list <- lapply(0:3, function(k)
 		{	# remove certain topics in the original vectors
 			partial.topics <- lapply(0:k, function(i)
 				top[seq(1+i,length(top),k+1)])
 			
 			# process the matrices of pairs of (pseudo)consecutive topics
 			partial.pairs <- lapply(partial.topics,function(v)
-				cbind(v[1:(length(v)-1)],v[2:(length(v))]))
+				if(length(v)>1)
+					cbind(v[1:(length(v)-1)],v[2:(length(v))])
+				else
+					c())
 			
 			# process the corresponding cooccurrence matrices 
 			partial.co.counts <- lapply(partial.pairs, function(m)
 				process.adjacency(mat=m, sym=!directed, levels=topic.names))
 			
 			# sum the list of matrices to get a single total matrix
-			m <- Reduce('+',l.tmp) 
+			m <- Reduce('+',partial.co.counts) 
 			
 			# possibly keep only the upper triangle of the total matrix, and linearize it
 			if(!directed)							# if the graph is undirected, the matrix is symmetrical
@@ -196,9 +201,17 @@ for(text.file in text.files)
 			names(data) <- paste(m[,1],m[,2],sep="-")
 			return(data)	
 		})
+		df <- data.frame(temp.list)
+		colnames(df) <- c("Order1","Order2","Order3","Order4")
+		return(df)
 	})
 	# record the resulting linearized matrices
-	
+	cat("Recording co-occurrence matrices as vectors\n")
+	sapply(1:length(orders.mat), function(i) 
+		{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+			write.table(x=orders.mat[[i]],file=paste(sentence.folder,prefix,"orders.txt",sep=""),col.names=FALSE,quote=FALSE)
+		})
 	
 	####### 3 topics
 #	# matrix of triplets
