@@ -36,7 +36,12 @@ directed <- FALSE
 # network. If "implicit", they are considered as separators (two
 # topic words separated by a no-topic word are not considered as
 # adjacent), but do not appear in the topic network.
-separator <- "ignore" # ignore explicit implicit 
+separator <- "ignore" # ignore explicit implicit
+
+# Whether or not collapsing consecutive words of the same topic,
+# i.e. merging them and representing them by a single occurrence
+# of the said topic.
+collapsed <- TRUE
 
 # set up in/out folders
 in.folder <- "WordCooc/in/clean2/"
@@ -48,6 +53,7 @@ out.folder <- "WordCooc/out/topics/"
 prefix <- paste(
 		"separator=",separator,".",
 		"directed=",tolower(directed),".",
+		"collapsed=",tolower(collapsed),".",
 		sep="")
 
 # get the topic map
@@ -116,6 +122,12 @@ for(text.file in text.files)
 		{	idx.kpt <- idx.kpt[-idx.rmd]
 			topics <- topics[-idx.rmd]
 		}
+	}
+	
+	# possibly merge similar consecutive topics
+	if(collapsed)
+	{	topics <- lapply(topics,function(v)
+					rle(v)$values)
 	}
 	
 	####### 1 topic
