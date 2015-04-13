@@ -15,6 +15,9 @@ library("parallel")		# parallel packages
 library("foreach")
 library("doParallel")
 
+library("compiler")		# enables compilation
+enableJIT(3)
+
 source("WordCooc/src/common/misc.R")
 
 

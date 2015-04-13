@@ -18,6 +18,9 @@
 #######################################################
 library("igraph")
 
+library("compiler")		# enables compilation
+enableJIT(3)
+
 source("WordCooc/src/common/com-measures.R")
 source("WordCooc/src/common/misc.R")
 
