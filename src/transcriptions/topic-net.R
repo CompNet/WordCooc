@@ -43,7 +43,8 @@ separator <- "ignore" # ignore explicit implicit
 
 # Whether or not collapsing consecutive words of the same topic,
 # i.e. merging them and representing them by a single occurrence
-# of the said topic.
+# of the said topic. For the separated="ignore" mode, the collapsing 
+# process is performed before removing the separators. 
 collapsed <- TRUE
 
 # Threshold used to define the topics: minimal relevance value 
@@ -60,14 +61,15 @@ out.folder <- "WordCooc/out/topics/"
 #in.map <- "WordCooc/in/gini_200.txt"
 in.map <- "WordCooc/in/gini_500.txt"
 
-
-
 # define file prefix (for the generated files)
 prefix <- paste(
 		"separator=",separator,".",
 		"directed=",tolower(directed),".",
 		"collapsed=",tolower(collapsed),".",
 		sep="")
+
+# dump output to file
+sink(file=paste(out.folder,prefix,"log.txt",sep=""),append=FALSE,split=TRUE)
 
 # get the topic map
 topic.table <- read.table(in.map)
@@ -98,7 +100,7 @@ print(text.files)
 for(text.file in text.files)
 {	####### input/output
 	# read the file line-by-line
-	cat("Reading sentences\n")
+	cat("Reading sentences for file",text.file,"\n")
 	sentences <- readLines(paste(in.folder,text.file,sep=""))
 	
 	# set up output folder
@@ -125,6 +127,12 @@ for(text.file in text.files)
 				return(topic.map[idx,2])
 			})
 	
+	# possibly merge similar consecutive topics
+	if(collapsed)
+	{	topics <- lapply(topics,function(v)
+					rle(v)$values)
+	}
+	
 	# possibly remove all no-topic words
 	if(separator=="ignore")
 	{	topics <- lapply(topics,function(v) 
@@ -139,12 +147,6 @@ for(text.file in text.files)
 		{	idx.kpt <- idx.kpt[-idx.rmd]
 			topics <- topics[-idx.rmd]
 		}
-	}
-	
-	# possibly merge similar consecutive topics
-	if(collapsed)
-	{	topics <- lapply(topics,function(v)
-					rle(v)$values)
 	}
 	
 	####### 1 topic
@@ -246,8 +248,26 @@ for(text.file in text.files)
 		})
 	# process correlations between columns and average over all texts
 	cat("Process correlations:\n")
-	correlation.matrices <- lapply(orders.mat, cor)
-	m <- Reduce('+',correlation.matrices) / length(correlation.matrices)
+	pen <- 0
+	correlation.matrices <- lapply(1:length(orders.mat), function(i)
+			{	m <- orders.mat[[i]]
+				res <- cor(m[which(apply(m>0,1,any)),])
+				if(any(is.na(res)))
+				{	cat("Problem with text number ",i,"/",length(orders.mat),"\n")
+						idx <- match(words[[idx.kpt[i]]],topic.map[,1])
+						idx[is.na(idx)] <- nrow(topic.map)
+					cat("Word list with corresponding topics:\n");print(rbind(words[[idx.kpt[i]]],topic.map[idx,2]))
+					cat("Topic list after process:\n");print(topics[[i]])
+					cat("Output matrix:\n");print(orders.mat[[i]])
+					#print(res)
+					res <- matrix(0,ncol=ncol(m),nrow=ncol(m))
+					pen <<- pen - 1
+				}
+				return(res)
+			}
+		)
+	cat("Number of correlation matrices containing NAs:",-pen,"/",length(correlation.matrices),"\n")
+	m <- Reduce('+',correlation.matrices) / (length(correlation.matrices)+pen)
 	print(m)
 	
 	####### 3 topics
@@ -274,4 +294,9 @@ for(text.file in text.files)
 #				m <- coco.counts[[i]]
 #				write.table(x=m,file=paste(sentence.folder,prefix,"triplets.txt",sep=""),col.names=FALSE,row.names=FALSE,quote=FALSE)
 #			})
+
+	cat("\n")
 }
+
+# release the log file
+sink(NULL)
