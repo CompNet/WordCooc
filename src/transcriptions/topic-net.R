@@ -46,11 +46,21 @@ separator <- "ignore" # ignore explicit implicit
 # of the said topic.
 collapsed <- TRUE
 
+# Threshold used to define the topics: minimal relevance value 
+# a word must have to be considered as characterisitc of a topic.
+threshold <- 0
+
 # set up in/out folders
 in.folder <- "WordCooc/in/clean2/"
 #in.folder <- "WordCooc/in/test/"
-in.map <- "WordCooc/in/discriminativeWordsListForEachTheme_200.txt"
 out.folder <- "WordCooc/out/topics/"
+
+# set up topic map
+#in.map <- "WordCooc/in/discriminativeWordsListForEachTheme_200.txt"
+#in.map <- "WordCooc/in/gini_200.txt"
+in.map <- "WordCooc/in/gini_500.txt"
+
+
 
 # define file prefix (for the generated files)
 prefix <- paste(
@@ -60,7 +70,11 @@ prefix <- paste(
 		sep="")
 
 # get the topic map
-topic.map <- as.matrix(read.table(in.map))
+topic.table <- read.table(in.map)
+idx <- 1:nrow(topic.table)
+if(ncol(topic.table)>2)
+	idx <- which(topic.table[,3]>=threshold)
+topic.map <- as.matrix(topic.table[idx,1:2])
 topic.names <- sort(unique(topic.map[,2]))
 topic.map <- rbind(topic.map,c("NA","SEP")) # add the separator symbol
 if(separator=="explicit")
@@ -191,7 +205,10 @@ for(text.file in text.files)
 	{	temp.list <- lapply(0:3, function(k)
 		{	# remove certain topics in the original vectors
 			partial.topics <- lapply(0:k, function(i)
-				top[seq(1+i,length(top),k+1)])
+				if(length(top)>(k+1))
+					top[seq(1+i,length(top),k+1)]
+				else
+					c())
 			
 			# process the matrices of pairs of (pseudo)consecutive topics
 			partial.pairs <- lapply(partial.topics,function(v)
@@ -205,7 +222,7 @@ for(text.file in text.files)
 				process.adjacency(mat=m, sym=!directed, levels=topic.names))
 			
 			# sum the list of matrices to get a single total matrix
-			m <- Reduce('+',partial.co.counts) 
+			m <- Reduce('+',partial.co.counts)
 			
 			# possibly keep only the upper triangle of the total matrix, and linearize it
 			if(!directed)							# if the graph is undirected, the matrix is symmetrical
@@ -227,6 +244,11 @@ for(text.file in text.files)
 			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
 			write.table(x=orders.mat[[i]],file=paste(sentence.folder,prefix,"orders.txt",sep=""),col.names=FALSE,quote=FALSE)
 		})
+	# process correlations between columns and average over all texts
+	cat("Process correlations:\n")
+	correlation.matrices <- lapply(orders.mat, cor)
+	m <- Reduce('+',correlation.matrices) / length(correlation.matrices)
+	print(m)
 	
 	####### 3 topics
 #	# matrix of triplets
