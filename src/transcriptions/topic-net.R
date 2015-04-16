@@ -150,11 +150,11 @@ for(text.file in text.files)
 	}
 	
 	####### 1 topic
-	# process the frequency of topics
-	cat("Counting topics\n")
-	freq <- lapply(topics,function(v) 
-				as.matrix(table(factor(v,levels=topic.names))))
-	
+#	# process the frequency of topics
+#	cat("Counting topics\n")
+#	freq <- lapply(topics,function(v) 
+#				as.matrix(table(factor(v,levels=topic.names))))
+#	
 #	# record topic frequencies
 #	cat("Recording topic frequencies\n")
 #	sapply(1:length(freq), function(i) 
@@ -162,28 +162,30 @@ for(text.file in text.files)
 #			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
 #			write.table(x=freq[[i]],file=paste(sentence.folder,"separator=",separator,".freq.txt",sep=""),col.names=FALSE,quote=FALSE)
 #		})
-	
-	# identify the most frequent topic by sentence
-	cat("Identifying the most frequent topics\n")
-	top.topics <- sapply(freq,function(freq) 
-			{	idx <- which.max(freq)
-				return(names(freq)[idx])
-			})
+#	
+#	 identify the most frequent topic by sentence
+#	cat("Identifying the most frequent topics\n")
+#	top.topics <- sapply(freq,function(f) 
+#			{	idx <- which.max(f)
+#				return(rownames(f)[idx])
+#			})
 	
 	# read the theme file
 	cat("Reading the themes file\n")
 	themes <- as.matrix(read.table(paste("WordCooc/in/themes",substr(text.file, 7, nchar(text.file)),sep=""), header=FALSE))
 	
-	# record estimated themes
-	cat("Recording the estimated themes\n")
-	themes <- cbind(themes,rep(NA,length(themes)))
-	themes[idx.kpt,2] <- top.topics
-	colnames(themes) <- c("Reference","Estimation")
-	write.table(file=paste(out.folder,prefix,"themes.txt",sep=""),row.names=FALSE,col.names=TRUE)
-	
-	# display performance
-	perf <- sum(as.numeric(themes[,1]==theme[,2]))/length(nrow(themes))
-	cat("Performance on theme prediction:",perf,"\n")
+#	# record estimated themes
+#	cat("Recording the estimated themes\n")
+#	themes <- cbind(themes,rep(NA,length(themes)))
+#	themes[idx.kpt,2] <- top.topics
+#	colnames(themes) <- c("Reference","Estimation")
+#	write.table(themes,file=paste(out.folder,prefix,"themes.txt",sep=""),row.names=FALSE,col.names=TRUE)
+#	
+#	# display performance
+#	perf.vect <- themes[,1]==themes[,2]
+#	perf.vect <- perf.vect[!is.na(perf.vect)]
+#	perf <- sum(as.numeric(perf.vect))/nrow(themes)
+#	cat("Performance on theme prediction:",perf,"\n")
 	
 	
 	####### 2 topics
@@ -224,74 +226,102 @@ for(text.file in text.files)
 #				write.graph(graph=nets[[i]],file=paste(sentence.folder,prefix,"network.graphml",sep=""),format="graphml")
 #			})
 
-#	### networks of higher orders
-#	cat("Processing higher-order networks\n")
-#	orders.mat <- lapply(topics, function(top)
-#	{	temp.list <- lapply(0:3, function(k)
-#		{	# remove certain topics in the original vectors
-#			partial.topics <- lapply(0:k, function(i)
-#				if(length(top)>(k+1))
-#					top[seq(1+i,length(top),k+1)]
-#				else
-#					c())
-#			
-#			# process the matrices of pairs of (pseudo)consecutive topics
-#			partial.pairs <- lapply(partial.topics,function(v)
-#				if(length(v)>1)
-#					cbind(v[1:(length(v)-1)],v[2:(length(v))])
-#				else
-#					c())
-#			
-#			# process the corresponding cooccurrence matrices 
-#			partial.co.counts <- lapply(partial.pairs, function(m)
-#				process.adjacency(mat=m, sym=!directed, levels=topic.names))
-#			
-#			# sum the list of matrices to get a single total matrix
-#			m <- Reduce('+',partial.co.counts)
-#			
-#			# possibly keep only the upper triangle of the total matrix, and linearize it
-#			if(!directed)							# if the graph is undirected, the matrix is symmetrical
-#				m[lower.tri(m,diag=FALSE)] <- NA	# put NA in the lower triangle of the matrix
-#			m <- as.data.frame(as.table(m))  		# turn into a 3-column table
-#			m <- na.omit(m)							# possibly remove NAs
-#			data <- m[,3]
-#			names(data) <- paste(m[,1],m[,2],sep="-")
-#			return(data)	
-#		})
-#		df <- data.frame(temp.list)
-#		colnames(df) <- c("Order1","Order2","Order3","Order4")
-#		return(df)
-#	})
-#	# record the resulting linearized matrices
-#	cat("Recording co-occurrence matrices as vectors\n")
-#	sapply(1:length(orders.mat), function(i) 
-#		{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
-#			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-#			write.table(x=orders.mat[[i]],file=paste(sentence.folder,prefix,"orders.txt",sep=""),col.names=FALSE,quote=FALSE)
-#		})
-#	# process correlations between columns and average over all texts
-#	cat("Process correlations:\n")
-#	pen <- 0
-#	correlation.matrices <- lapply(1:length(orders.mat), function(i)
+	### networks of higher orders
+	cat("Processing higher-order networks\n")
+	orders.mat <- lapply(topics, function(top)
+	{	temp.list <- lapply(0:3, function(k)
+		{	# remove certain topics in the original vectors
+			partial.topics <- lapply(0:k, function(i)
+				if(length(top)>(k+1))
+					top[seq(1+i,length(top),k+1)]
+				else
+					c())
+			
+			# process the matrices of pairs of (pseudo)consecutive topics
+			partial.pairs <- lapply(partial.topics,function(v)
+				if(length(v)>1)
+					cbind(v[1:(length(v)-1)],v[2:(length(v))])
+				else
+					c())
+			
+			# process the corresponding cooccurrence matrices 
+			partial.co.counts <- lapply(partial.pairs, function(m)
+				process.adjacency(mat=m, sym=!directed, levels=topic.names))
+			
+			# sum the list of matrices to get a single total matrix
+			m <- Reduce('+',partial.co.counts)
+			
+			# possibly keep only the upper triangle of the total matrix, and linearize it
+			if(!directed)							# if the graph is undirected, the matrix is symmetrical
+				m[lower.tri(m,diag=FALSE)] <- NA	# put NA in the lower triangle of the matrix
+			m <- as.data.frame(as.table(m))  		# turn into a 3-column table
+			m <- na.omit(m)							# possibly remove NAs
+			data <- m[,3]
+			names(data) <- paste(m[,1],m[,2],sep="-")
+			return(data)	
+		})
+		df <- data.frame(temp.list)
+		colnames(df) <- c("Order1","Order2","Order3","Order4")
+		return(df)
+	})
+	# record the resulting linearized matrices
+	cat("Recording co-occurrence matrices as vectors\n")
+	sapply(1:length(orders.mat), function(i) 
+		{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+			dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+			write.table(x=orders.mat[[i]],file=paste(sentence.folder,prefix,"orders.txt",sep=""),col.names=FALSE,quote=FALSE)
+		})
+	# process correlations between columns and average over all texts
+	cat("Process correlations:\n")
+	pen <- 0
+	correlation.matrices <- lapply(1:length(orders.mat), function(i)
+			{	m <- orders.mat[[i]]
+				res <- cor(m[which(apply(m>0,1,any)),])
+				if(any(is.na(res)))
+				{	cat("Problem with text number ",i,"/",length(orders.mat),"\n")
+						idx <- match(words[[idx.kpt[i]]],topic.map[,1])
+						idx[is.na(idx)] <- nrow(topic.map)
+					cat("Word list with corresponding topics:\n");print(rbind(words[[idx.kpt[i]]],topic.map[idx,2]))
+					cat("Topic list after process:\n");print(topics[[i]])
+					cat("Output matrix:\n");print(orders.mat[[i]])
+					#print(res)
+					res <- matrix(0,ncol=ncol(m),nrow=ncol(m))
+					pen <<- pen - 1
+				}
+				return(res)
+			}
+		)
+	cat("Number of correlation matrices containing NAs:",-pen,"/",length(correlation.matrices),"\n")
+	m <- Reduce('+',correlation.matrices) / (length(correlation.matrices)+pen)
+	print(m)
+	# record single file containing all results
+	cat("Recording all results in a single file\n")
+	sapply(1:length(orders.mat), function(i) 
+			{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
+				dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
+				write.table(x=orders.mat[[i]],file=paste(sentence.folder,prefix,"orders.txt",sep=""),col.names=FALSE,quote=FALSE)
+			})
+	con <- file(paste(out.folder,text.file,".",prefix,"hepsi.txt",sep=""))
+	theme.names <- c("PV","ITNR","VGC","ETFC","OBJT","NVGO","HORR","TARF");
+	lines <- sapply(1:length(sentences), function(i)
+			{	i2 <- which(idx.kpt==i)
+				if(length(i2)>0)
+					m <- orders.mat[[i2]]
+				else
+					m <- matrix(0,nrow=nrow(orders.mat[[1]]),ncol=ncol(orders.mat[[1]]))
+				tmp <- apply(m, 2, function(v) paste(v,collapse=","))
+				res <- paste(tmp, collapse=" ")
+				res <- paste(res,which(theme.names==themes[i]),sep="\t")
+			})
+#	lines <- rep("",length(sentences))
+#	lines[idx.kpt] <- sapply(1:length(orders.mat), function(i)
 #			{	m <- orders.mat[[i]]
-#				res <- cor(m[which(apply(m>0,1,any)),])
-#				if(any(is.na(res)))
-#				{	cat("Problem with text number ",i,"/",length(orders.mat),"\n")
-#						idx <- match(words[[idx.kpt[i]]],topic.map[,1])
-#						idx[is.na(idx)] <- nrow(topic.map)
-#					cat("Word list with corresponding topics:\n");print(rbind(words[[idx.kpt[i]]],topic.map[idx,2]))
-#					cat("Topic list after process:\n");print(topics[[i]])
-#					cat("Output matrix:\n");print(orders.mat[[i]])
-#					#print(res)
-#					res <- matrix(0,ncol=ncol(m),nrow=ncol(m))
-#					pen <<- pen - 1
-#				}
-#				return(res)
-#			}
-#		)
-#	cat("Number of correlation matrices containing NAs:",-pen,"/",length(correlation.matrices),"\n")
-#	m <- Reduce('+',correlation.matrices) / (length(correlation.matrices)+pen)
-#	print(m)
+#				tmp <- apply(m, 2, function(v) paste(v,collapse=","))
+#				res <- paste(tmp, collapse=" ")
+#				res <- paste(res,themes[idx.kpt[i]],sep="\t")
+#			})
+	writeLines(lines, con)
+	close(con)
 	
 	####### 3 topics
 #	# matrix of triplets
