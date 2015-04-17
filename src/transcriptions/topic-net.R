@@ -309,7 +309,7 @@ for(text.file in text.files)
 					m <- orders.mat[[i2]]
 				else
 					m <- matrix(0,nrow=nrow(orders.mat[[1]]),ncol=ncol(orders.mat[[1]]))
-				tmp <- apply(m, 2, function(v) paste(v,collapse=","))
+				tmp <- apply(m, 1, function(v) paste(v,collapse=","))
 				res <- paste(tmp, collapse=" ")
 				res <- paste(res,which(theme.names==themes[i]),sep="\t")
 			})
