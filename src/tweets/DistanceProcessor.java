@@ -172,7 +172,7 @@ public class DistanceProcessor implements Runnable
 	 * 		Problem while reading the matrices, or recording the distances.
 	 */
 	private static void processCorpus(File folder1, File folder2, int threadNbr) throws IOException
-	{	System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Start processing");
+	{	logs("Start processing");
 		
 		// retrieve the list of folders in each folder
 		FileFilter filter = new FileFilter()
@@ -183,25 +183,25 @@ public class DistanceProcessor implements Runnable
 			}
 		};
 		folders1 = folder1.listFiles(filter);
-		System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Numbers of users in the 1st folder: "+folders1.length);
+		logs("Numbers of users in the 1st folder: "+folders1.length);
 		folders2 = folder2.listFiles(filter);
-		System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Numbers of users in the 2nd folder: "+folders2.length);
+		logs("Numbers of users in the 2nd folder: "+folders2.length);
 
 		// possibly intervert the lists depending on their sizes
 		if(folders1.length<folders2.length)
-		{	System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Interverting the folder lists");
+		{	logs("Interverting the folder lists");
 			File[] temp = folders1;
 			folders1 = folders2;
 			folders2 = temp;
 		}
 		
 		// compare the corresponding matrices
-		System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Starting the comparison");
+		logs("Starting the comparison");
 		counter = 0;
 		for(int i=0;i<threadNbr;i++)
 		{	DistanceProcessor dp = new DistanceProcessor(i);
 			Thread t = new Thread(dp);
-			System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] " + "Starting thread #"+i+" "+(i+1)+"/"+threadNbr);
+			logs("Starting thread #"+i+" "+(i+1)+"/"+threadNbr);
 			t.start();
 		}
 	}
@@ -219,13 +219,13 @@ public class DistanceProcessor implements Runnable
 		
 		while(idx1>=0)
 		{	File f1 = folders1[idx1];
-			System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+") " + "Treating user "+f1.getName()+" ("+(idx1+1)+"/"+folders1.length+")"); 
+			log("Treating user "+f1.getName()+" ("+(idx1+1)+"/"+folders1.length+")"); 
 		
 			// check if it was already processed before
 			String fileName = f1.getPath() + File.separator + DISTANCE_FILE;
 			File file = new File(fileName);
 			if(file.exists())
-				System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "  This user was already processed before");
+				log("  This user was already processed before");
 		
 			// if the user must be processed
 			else
@@ -241,7 +241,7 @@ public class DistanceProcessor implements Runnable
 				// compare to all the other matrices
 				for(File f2: folders2)
 				{	
-//					System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "  Processing comparison "+f1.getName()+" vs. "+f2.getName()+" ("+(idx1+1)+"/"+folders1.length+" vs. "+(idx2+1)+"/"+folders2.length+")");
+//					log("  Processing comparison "+f1.getName()+" vs. "+f2.getName()+" ("+(idx1+1)+"/"+folders1.length+" vs. "+(idx2+1)+"/"+folders2.length+")");
 					
 					// get the second matrix
 					Object[] tmp2 = loadMatrix(f2);
@@ -257,7 +257,7 @@ public class DistanceProcessor implements Runnable
 					
 					// process the distance and update the distance array
 					distances[idx2] = processEuclideanDistance(v1, v2);
-//					System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "    Resulting distance: "+distances[idx2]);
+//					log("    Resulting distance: "+distances[idx2]);
 					idx2++;
 				}
 				
@@ -268,7 +268,7 @@ public class DistanceProcessor implements Runnable
 			// update index
 			idx1 = accessCounter();
 		}
-		System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "Thread over");
+		log("Thread over");
 	}
 	
 	////////////////////////////////////////////////////////////
@@ -276,9 +276,29 @@ public class DistanceProcessor implements Runnable
 	////////////////////////////////////////////////////////////
 	/** Date format used for logging */
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	/** Calendar used for logging */
-	private final static Calendar CALENDAR = Calendar.getInstance();
-
+	
+	/**
+	 * Logs a message, adding date and time.
+	 * 
+	 * @param text
+	 * 		Text to log.
+	 */
+	private static void logs(String text)
+	{	Calendar cal = Calendar.getInstance();
+		System.out.println("["+DATE_FORMAT.format(cal.getTime())+"] " + text);
+	}
+	
+	/**
+	 * Logs a message, adding date and time.
+	 * 
+	 * @param text
+	 * 		Text to log.
+	 */
+	private void log(String text)
+	{	Calendar cal = Calendar.getInstance();
+		System.out.println("["+DATE_FORMAT.format(cal.getTime())+"] ("+threadNumber+") " + text);
+	}
+	
 	////////////////////////////////////////////////////////////
 	////	MULTITHREAD PROCESSING
 	////////////////////////////////////////////////////////////
