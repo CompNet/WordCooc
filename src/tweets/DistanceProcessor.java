@@ -38,14 +38,14 @@ public class DistanceProcessor implements Runnable
 	public static void main(String[] args) throws IOException
 	{	
 //		String mainFolder = "data/";
-		String mainFolder = "~/work/data/";
+		String mainFolder = "/home/labatutv/work/data/";
 //		File folder1 = new File(mainFolder+"part1");
 		File folder1 = new File(mainFolder+"test_features");
 //		File folder2 = new File(mainFolder+"part2");
 		File folder2 = new File(mainFolder+"training_features");
 		
 		symmetric = true;
-		int threadNbr = 2;
+		int threadNbr = 10;
 		processCorpus(folder1, folder2, threadNbr);
 	}
 	
@@ -240,7 +240,8 @@ public class DistanceProcessor implements Runnable
 				
 				// compare to all the other matrices
 				for(File f2: folders2)
-				{	System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "  Processing comparison "+f1.getName()+" vs. "+f2.getName()+" ("+(idx1+1)+"/"+folders1.length+" vs. "+(idx2+1)+"/"+folders2.length+")");
+				{	
+//					System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "  Processing comparison "+f1.getName()+" vs. "+f2.getName()+" ("+(idx1+1)+"/"+folders1.length+" vs. "+(idx2+1)+"/"+folders2.length+")");
 					
 					// get the second matrix
 					Object[] tmp2 = loadMatrix(f2);
@@ -256,7 +257,7 @@ public class DistanceProcessor implements Runnable
 					
 					// process the distance and update the distance array
 					distances[idx2] = processEuclideanDistance(v1, v2);
-					System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "    Resulting distance: "+distances[idx2]);
+//					System.out.println("["+DATE_FORMAT.format(CALENDAR.getTime())+"] ("+threadNumber+")" + "    Resulting distance: "+distances[idx2]);
 					idx2++;
 				}
 				

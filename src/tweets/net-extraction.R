@@ -182,7 +182,7 @@ for(i in 1:length(text.files))
 	# record co-occurrence matrix
 #	if(record.secondary.data)
 	{	cat("Recording the co-occurrence matrix\n")
-		write.table(x=co.counts,file=paste(subfolder,"coocurrences.txt",sep=""))
+		write.table(x=co.counts,file=paste(subfolder,"cooccurrences.txt",sep=""))
 	}
 	
 	# build the networks
