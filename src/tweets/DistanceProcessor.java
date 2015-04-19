@@ -183,8 +183,10 @@ public class DistanceProcessor implements Runnable
 			}
 		};
 		folders1 = folder1.listFiles(filter);
+		Arrays.sort(folders1);
 		logs("Numbers of users in the 1st folder: "+folders1.length);
 		folders2 = folder2.listFiles(filter);
+		Arrays.sort(folders2);
 		logs("Numbers of users in the 2nd folder: "+folders2.length);
 
 		// possibly intervert the lists depending on their sizes
