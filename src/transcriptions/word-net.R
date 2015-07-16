@@ -84,7 +84,7 @@ for(text.file in text.files)
 		sapply(1:length(co.counts), function(i) 
 				{	sentence.folder <- paste(subfolder,idx.kpt[i],"/",sep="")
 					dir.create(sentence.folder,recursive=TRUE,showWarnings=FALSE)
-					write.table(x=co.counts[[i]],file=paste(sentence.folder,"coocurrences.txt",sep=""))
+					write.table(x=co.counts[[i]],file=paste(sentence.folder,"cooccurrences.txt",sep=""))
 				})
 	}
 	

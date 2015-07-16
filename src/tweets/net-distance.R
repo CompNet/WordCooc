@@ -75,7 +75,7 @@ foreach(i=1:(length(text.files)-1)) %dopar%
 	names2 <- c()
 	
 	# get (partial) adjacency matrix
-	co.count1 <- as.matrix(read.table(file=paste(subfolder1,"coocurrences.txt",sep=""),header=TRUE,row.names=1,
+	co.count1 <- as.matrix(read.table(file=paste(subfolder1,"cooccurrences.txt",sep=""),header=TRUE,row.names=1,
 					check.names=FALSE)) # otherwise, an "X" is added in front of the colnames
 	
 	# possibly load previously processed distances
@@ -105,7 +105,7 @@ foreach(i=1:(length(text.files)-1)) %dopar%
 		else
 		{
 			# get the (partial) adjacency matrix
-			co.count2 <- as.matrix(read.table(file=paste(subfolder2,"coocurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
+			co.count2 <- as.matrix(read.table(file=paste(subfolder2,"cooccurrences.txt",sep=""),header=TRUE,row.names=1,check.names=FALSE))
 			
 			common.terms <- sort(unique(c(rownames(co.count1),rownames(co.count2))))
 			# first matrix
